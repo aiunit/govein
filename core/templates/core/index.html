@@ -10,26 +10,64 @@
 <div id="app">
     {% verbatim %}
     <div class="grid" :class="{black: player==1, white: player==2}">
-        <div class="row" v-for="(r, row) in grid">
-            <div class="cell" v-for="(c, cell) in row" track-by="$index"
-                 :class="{star: isStar(r, c), black: grid[r][c] == 1, white: grid[r][c] == 2}"
-                 @click="go(r, c)"
+        <div class="label-x">
+            <div class="label" v-for="label in label.x">{{ label }}</div>
+        </div>
+        <div class="label-y">
+            <div class="label" v-for="label in label.y">{{ label }}</div>
+        </div>
+        <div class="row" v-for="(x, row) in grid">
+            <div class="cell" v-for="(y, cell) in row" track-by="$index"
+                 :class="{star: isStar(x, y), black: grid[x][y] == 1, white: grid[x][y] == 2}"
+                 @click="go(x, y)"
             ></div>
         </div>
     </div>
+    <table class="table-log">
+        <thead>
+        <tr>
+            <th>序号</th>
+            <th>位置</th>
+            <th>x</th>
+            <th>y</th>
+            <th>old</th>
+            <th>new</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr :class="{active: history_cursor == $index}" v-for="log in history">
+            <td>{{ $index + 1 }}</td>
+            <td>{{ 'ABCDEFGHJKLMNOPQRST'[log.y] }}{{ 19 - log.x }}</td>
+            <td>{{ log.x }}</td>
+            <td>{{ log.y }}</td>
+            <td>{{ ['-', '黑', '白'][log.old_val] }}</td>
+            <td>{{ ['-', '黑', '白'][log.new_val] }}</td>
+        </tr>
+        </tbody>
+    </table>
     <div class="form-operate">
-        <label>
-            <input type="radio" name="player" value="1" v-model="player"/>
-            黑
-        </label>
-        <label>
-            <input type="radio" name="player" value="2" v-model="player"/>
-            白
-        </label>
-        <label>
-            <input type="checkbox" v-model="auto"/>
-            自动切换
-        </label>
+        <div>
+            <label>
+                <input type="radio" name="player" value="1" v-model="player"/>
+                黑
+            </label>
+            <label>
+                <input type="radio" name="player" value="2" v-model="player"/>
+                白
+            </label>
+            <label>
+                <input type="radio" name="player" value="0" v-model="player"/>
+                擦除
+            </label>
+            <label>
+                <input type="checkbox" v-model="autoSwitch"/>
+                自动切换
+            </label>
+        </div>
+        <div>
+            <button @click="prev">&lt;</button>
+            <button @click="next">&gt;</button>
+        </div>
     </div>
     {% endverbatim %}
 
