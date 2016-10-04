@@ -9,7 +9,7 @@
 <body>
 <div id="app">
     {% verbatim %}
-    <div class="grid" :class="{black: player==1, white: player==2}">
+    <div class="grid" :class="{black: action==1, white: action==2}">
         <div class="label-x">
             <div class="label" v-for="label in label.x">{{ label }}</div>
         </div>
@@ -48,15 +48,15 @@
     <div class="form-operate">
         <div>
             <label>
-                <input type="radio" name="player" value="1" v-model="player"/>
+                <input type="radio" name="action" value="1" v-model="action"/>
                 黑
             </label>
             <label>
-                <input type="radio" name="player" value="2" v-model="player"/>
+                <input type="radio" name="action" value="2" v-model="action"/>
                 白
             </label>
             <label>
-                <input type="radio" name="player" value="0" v-model="player"/>
+                <input type="radio" name="action" value="0" v-model="action"/>
                 擦除
             </label>
             <label>
