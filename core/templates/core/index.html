@@ -9,12 +9,27 @@
 <body>
 <div id="app">
     {% verbatim %}
-    <div class="grid">
+    <div class="grid" :class="{black: player==1, white: player==2}">
         <div class="row" v-for="(r, row) in grid">
             <div class="cell" v-for="(c, cell) in row" track-by="$index"
-                 :class="{star: isStar(r, c)}"
+                 :class="{star: isStar(r, c), black: grid[r][c] == 1, white: grid[r][c] == 2}"
+                 @click="go(r, c)"
             ></div>
         </div>
+    </div>
+    <div class="form-operate">
+        <label>
+            <input type="radio" name="player" value="1" v-model="player"/>
+            黑
+        </label>
+        <label>
+            <input type="radio" name="player" value="2" v-model="player"/>
+            白
+        </label>
+        <label>
+            <input type="checkbox" v-model="auto"/>
+            自动切换
+        </label>
     </div>
     {% endverbatim %}
 
