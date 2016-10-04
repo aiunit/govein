@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load staticfiles %}
+    <meta charset="UTF-8">
+    <title>Go Vein Project</title>
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}"/>
+</head>
+<body>
+<div id="app">
+    {% verbatim %}
+    <div class="grid">
+        <div class="row" v-for="(r, row) in grid">
+            <div class="cell" v-for="(c, cell) in row" track-by="$index"
+                 :class="{star: isStar(r, c)}"
+            ></div>
+        </div>
+    </div>
+    {% endverbatim %}
+
+    <script src="{% static 'core/lib/vuejs/vue.js' %}"></script>
+    <script src="{% static 'core/js/script.js' %}"></script>
+</div>
+</body>
+</html>
