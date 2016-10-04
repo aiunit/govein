@@ -37,17 +37,19 @@ class BoardState(models.Model):
         verbose_name_plural = 'Board States'
 
     def __str__(self):
-        result = '<Board: {}>\n'.format(id)
+        result = '<Board: {}>\n'.format(self.id)
         grid = self.to_grid()
         for i in range(19):
             for j in range(19):
-                result += ' xo#'[grid[i][j]]
+                result += '.xo#'[grid[i][j]]
             result += '\n'
         return result
 
     def save(self, *args, **kwargs):
         if not kwargs.get('skip_normalize'):
             self.normalize()
+        else:
+            del kwargs['skip_normalize']
         super().save(*args, **kwargs)
 
     def rob(self):
@@ -59,23 +61,24 @@ class BoardState(models.Model):
         for i in range(19):
             for j in range(19):
                 z = i * 19 + j
-                b[z // 4] += (grid[i][j] << z % 4)
+                b[z // 4] += (grid[i][j] << (z % 4 * 2))
         return bytes(b)
 
     @staticmethod
     def get_grid_from_data(data):
-        grid = [[0] * 19] * 19
+        grid = [[0] * 19 for i in range(19)]
         for i in range(19):
             for j in range(19):
                 z = i * 19 + j
                 byte = data[z // 4]
-                grid[i][j] = (byte >> z * 2) & 3
+                grid[i][j] = (byte >> (z % 4 * 2)) % 4
         return grid
 
     @staticmethod
     def get_key_from_data(data, rob=(-1, -1)):
         import hashlib
-        sha1 = hashlib.sha1(data + bytes(rob))
+        sha1 = hashlib.sha1(
+            data + bytes(map(lambda x: 255 if x < 0 else x, rob)))
         return sha1.hexdigest()
 
     @staticmethod
@@ -99,15 +102,15 @@ class BoardState(models.Model):
         if mode & 0b100:
             grid = list(zip(*grid))
             rob_x, rob_y = rob_y, rob_x
-        for i in range(mode & 0b011):
+        for i in range(mode % 4):
             # http://stackoverflow.com/a/496056/2544762
             grid = list(zip(*grid[::-1]))
-            rob_x, rob_y = rob_y, 18 - rob_x
+            rob_x, rob_y = rob_y, len(grid) - 1 - rob_x
         data = BoardState.get_data_from_grid(grid)
         return (data, (rob_x, rob_y)) if rob else data
 
     def to_grid(self):
-        return self.get_grid_from_data(self.grid)
+        return self.get_grid_from_data(self.data)
 
     @staticmethod
     def from_grid(grid, rob=(-1, -1)):

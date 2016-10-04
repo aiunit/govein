@@ -8,6 +8,7 @@
 </head>
 <body>
 <div id="app">
+    <input id="init_data" type="hidden" value="{{ state.to_grid }}"/>
     {% verbatim %}
     <div class="grid" :class="{black: action==1, white: action==2}">
         <div class="label-x">
@@ -67,11 +68,34 @@
         <div>
             <button @click="prev">&lt;</button>
             <button @click="next">&gt;</button>
+            <button @click="submit">提交</button>
         </div>
     </div>
     {% endverbatim %}
 
+    <hr/>
+
+    <table class="table-states">
+        <thead>
+        <tr>
+            <th>ID</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for bs in state_list %}
+            <tr>
+                <td>
+                    <a href="?id={{ bs.id }}">{{ bs.id }}</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+
+    </table>
+
     <script src="{% static 'core/lib/vuejs/vue.js' %}"></script>
+    <script src="{% static 'core/lib/vuejs/vue-resource.min.js' %}"></script>
+    <script src="{% static 'core/js/resource.js' %}"></script>
     <script src="{% static 'core/js/script.js' %}"></script>
 </div>
 </body>

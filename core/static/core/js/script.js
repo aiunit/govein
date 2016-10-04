@@ -1,12 +1,21 @@
 (function () {
-    var grid = [];
-    for (var i = 0; i < 19; ++i) {
-        var row = [];
-        for (var j = 0; j < 19; ++j) {
-            row.push(0);
+
+    var grid;
+    var initDataElement = document.getElementById('init_data');
+    if (initDataElement.value) {
+        grid = JSON.parse(initDataElement.value);
+    } else {
+        grid = [];
+        for (var i = 0; i < 19; ++i) {
+            var row = [];
+            for (var j = 0; j < 19; ++j) {
+                row.push(0);
+            }
+            grid.push(row);
         }
-        grid.push(row);
     }
+    console.log(grid);
+
     var vm = window.app = new Vue({
         el: '#app',
         data: {
@@ -30,16 +39,20 @@
             history_cursor: -1
         },
         methods: {
-            draw: function () {
-                var str = '';
-                for (var i = 0; i < vm.grid.length; ++i) {
-                    for (var j = 0; j < vm.grid[i].length; ++j) {
-                        str += '.xo'[vm.grid[i][j]];
-                    }
-                    str += '\n';
-                }
-                console.log(str);
-            },
+            //draw: function () {
+            //    var str = '';
+            //    for (var i = 0; i < vm.grid.length; ++i) {
+            //        for (var j = 0; j < vm.grid[i].length; ++j) {
+            //            str += '.xo'[vm.grid[i][j]];
+            //        }
+            //        str += '\n';
+            //    }
+            //    console.log(str);
+            //},
+            /**
+             * TODO: 在多番回退恢复之间会产生 bug
+             * @returns {boolean}
+             */
             prev: function () {
                 if (vm.history_cursor < 0) return false;
                 var log = vm.history[vm.history_cursor--];
@@ -160,7 +173,7 @@
                     vm.history_cursor = vm.history.length - 1;
                 }
 
-                vm.draw();
+                //vm.draw();
                 return true;
             },
             isStar: function (x, y) {
@@ -208,7 +221,7 @@
                         //console.log(vm.getLabel(x, y), isAlive(x, y));
                         if (isAlive(x, y) === 1) {
                             cgrid[x - dx[d]][y - dy[d]] = 1;
-                            while(collected.length) {
+                            while (collected.length) {
                                 var pos = collected.pop();
                                 cgrid[pos.x][pos.y] = 1;
                             }
@@ -234,6 +247,28 @@
 
                 return deadStones;
 
+            },
+            submit: function () {
+                // 因为默认黑先，所以如果该白走，需要将所有棋子翻转
+                var i, j;
+                var grid = JSON.parse(JSON.stringify(vm.grid));
+                if (vm.action === 2) {
+                    for (i = 0; i < grid.length; ++i) {
+                        for (j = 0; j < grid[i].length; ++j) {
+                            grid[i][j] = grid[i][j] && 3 - grid[i][j];
+                        }
+                    }
+                }
+                // 发送请求
+                vm.$http.post(
+                    '/submit/',
+                    JSON.stringify({
+                        grid: grid,
+                        rob: [vm.rob.x, vm.rob.y],
+                    })
+                ).then(function (resp) {
+                    console.log(resp);
+                });
             }
         }
     });

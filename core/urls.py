@@ -4,4 +4,5 @@ from .views import *
 
 urlpatterns = [
     url(r'^$', index),
+    url(r'^submit/$', submit),
 ]
