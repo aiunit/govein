@@ -3,6 +3,7 @@ from django.conf.urls import url
 from .views import *
 
 urlpatterns = [
-    url(r'^$', index),
-    url(r'^submit/$', submit),
+    url(r'^$', index, name='index'),
+    url(r'^submit/$', submit, name='submit'),
+    url(r'^preview/(?P<pk>\w+)/$', preview, name='preview'),
 ]
