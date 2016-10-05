@@ -37,22 +37,21 @@ def preview(request, pk):
 
     bs = BoardState.objects.get(id=pk)
 
-    sz = 95
+    sz = 99
     board_fill = (222, 184, 135)
     image = Image.new('RGB', (sz, sz), board_fill)
     draw = ImageDraw.Draw(image)
 
     # Board lines
     line_fill = (0, 0, 0)
-    for i in range(2, sz, 5):
-        draw.line((2, i, 92, i), fill=line_fill)
-        draw.line((i, 2, i, 92), fill=line_fill)
+    for i in range(4, sz, 5):
+        draw.line((4, i, 94, i), fill=line_fill)
+        draw.line((i, 4, i, 94), fill=line_fill)
 
     # Stars
     star_fill = (111, 92, 68)
-    for i in range(2 + 5 * 3, sz, 5 * 6):
-        for j in range(2 + 5 * 3, sz, 5 * 6):
-            # draw.point((i, j), fill=(0,) * 3)
+    for i in range(4 + 5 * 3, sz, 5 * 6):
+        for j in range(4 + 5 * 3, sz, 5 * 6):
             draw.point((i - 1, j - 1), fill=star_fill)
             draw.point((i + 1, j - 1), fill=star_fill)
             draw.point((i - 1, j + 1), fill=star_fill)
@@ -65,7 +64,7 @@ def preview(request, pk):
             if not grid[i][j]:
                 continue
             fill = [None, (0,) * 3, (255,) * 3][grid[i][j]]
-            xy = (j * 5, i * 5, j * 5 + 4, i * 5 + 4)
+            xy = (j * 5 + 2, i * 5 + 2, j * 5 + 6, i * 5 + 6)
             draw.ellipse(xy, fill)
 
     # Output the image streaming
