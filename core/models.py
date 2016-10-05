@@ -121,6 +121,56 @@ class BoardState(UserOwnedModel,
             del kwargs['skip_normalize']
         super().save(*args, **kwargs)
 
+    def get_preview_image_bytes(self):
+        """
+        :return: ByteArray
+        """
+
+        import io
+        from PIL import Image, ImageDraw
+
+        sz = 99
+        board_fill = (222, 184, 135)
+        image = Image.new('RGB', (sz, sz), board_fill)
+        draw = ImageDraw.Draw(image, 'RGBA')
+
+        # Board lines
+        line_fill = (0, 0, 0)
+        for i in range(4, sz, 5):
+            draw.line((4, i, 94, i), fill=line_fill)
+            draw.line((i, 4, i, 94), fill=line_fill)
+
+        # Stars
+        star_fill = (0, 0, 0, 84)
+        for i in range(4 + 5 * 3, sz, 5 * 6):
+            for j in range(4 + 5 * 3, sz, 5 * 6):
+                draw.rectangle([i - 1, j - 1, i + 1, j + 1], fill=star_fill)
+
+        # Stones
+        grid = self.to_grid()
+        white_fill = (255, 255, 255)
+        black_fill = (0, 0, 0)
+        for i in range(19):
+            for j in range(19):
+                if not grid[i][j]:
+                    continue
+                fill = [None, black_fill, white_fill][grid[i][j]]
+                xy = (j * 5 + 2, i * 5 + 2, j * 5 + 6, i * 5 + 6)
+                draw.ellipse(xy, fill)
+
+        # Rob position
+        rob_fill = (255, 0, 0)
+        if self.rob_x >= 0 and self.rob_y >= 0:
+            x = 4 + 5 * self.rob_x
+            y = 4 + 5 * self.rob_y
+            draw.line((y - 2, x, y + 2, x), fill=rob_fill)
+            draw.line((y, x - 2, y, x + 2), fill=rob_fill)
+
+        # Output the image streaming
+        fs = io.BytesIO()
+        image.save(fs, 'gif')
+        return fs.getbuffer()
+
     def preview_url(self):
         from django.core.urlresolvers import reverse
         return reverse('preview', kwargs=dict(pk=self.id))
@@ -131,8 +181,26 @@ class BoardState(UserOwnedModel,
     preview_html_tag.short_description = 'Preview'
     preview_html_tag.allow_tags = True
 
+    def hex(self):
+        return self.data.hex()
+
+    hex.short_description = 'Data'
+    hex.allow_tags = True
+
+    def get_rob_label(self):
+        return self.get_label(self.rob_x, self.rob_y)
+
+    get_rob_label.short_description = 'Rob Position'
+    get_rob_label.allow_tags = True
+
     def rob(self):
         return self.rob_x, self.rob_y
+
+    @staticmethod
+    def get_label(x, y):
+        label_x = list(range(19, 0, -1)) + ['-']
+        label_y = 'ABCDEFGHJKLMNOPQRST-'
+        return '{}{}'.format(label_x[x], label_y[y])
 
     @staticmethod
     def get_data_from_grid(grid):

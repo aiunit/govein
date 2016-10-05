@@ -32,45 +32,8 @@ def submit(request):
 
 
 def preview(request, pk):
-    import io
-    from PIL import Image, ImageDraw
-
     bs = BoardState.objects.get(id=pk)
-
-    sz = 99
-    board_fill = (222, 184, 135)
-    image = Image.new('RGB', (sz, sz), board_fill)
-    draw = ImageDraw.Draw(image)
-
-    # Board lines
-    line_fill = (0, 0, 0)
-    for i in range(4, sz, 5):
-        draw.line((4, i, 94, i), fill=line_fill)
-        draw.line((i, 4, i, 94), fill=line_fill)
-
-    # Stars
-    star_fill = (111, 92, 68)
-    for i in range(4 + 5 * 3, sz, 5 * 6):
-        for j in range(4 + 5 * 3, sz, 5 * 6):
-            draw.point((i - 1, j - 1), fill=star_fill)
-            draw.point((i + 1, j - 1), fill=star_fill)
-            draw.point((i - 1, j + 1), fill=star_fill)
-            draw.point((i + 1, j + 1), fill=star_fill)
-
-    # Stones
-    grid = bs.to_grid()
-    for i in range(19):
-        for j in range(19):
-            if not grid[i][j]:
-                continue
-            fill = [None, (0,) * 3, (255,) * 3][grid[i][j]]
-            xy = (j * 5 + 2, i * 5 + 2, j * 5 + 6, i * 5 + 6)
-            draw.ellipse(xy, fill)
-
-    # Output the image streaming
-    fs = io.BytesIO()
-    image.save(fs, 'gif')
     return HttpResponse(
-        fs.getbuffer(),
+        bs.get_preview_image_bytes(),
         content_type='image/gif',
     )
