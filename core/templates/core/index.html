@@ -22,8 +22,10 @@
         <div class="row" v-for="(x, row) in grid">
             <div class="cell" v-for="(y, cell) in row" track-by="$index"
                  :class="{star: isStar(x, y), black: grid[x][y] == 1, white: grid[x][y] == 2}"
-                 @click="go(x, y)"
-            ></div>
+                 @click="go(x, y)">
+                <div class="cell-mark rob" v-if="x===rob.x && y===rob.y">×</div>
+                <div class="cell-mark flag" v-if="x===pos.x && y===pos.y"></div>
+            </div>
         </div>
     </div>
     <table class="table-log">

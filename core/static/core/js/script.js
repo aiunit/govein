@@ -19,6 +19,14 @@
             history: null,
             history_cursor: 0
         },
+        computed: {
+            pos: function () {
+                return {
+                    x: vm.history[vm.history_cursor].x,
+                    y: vm.history[vm.history_cursor].y
+                };
+            }
+        },
         methods: {
             //draw: function () {
             //    var str = '';

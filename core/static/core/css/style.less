@@ -91,6 +91,27 @@
       &.black::after {
         background: @color-stone-black;
       }
+      .cell-mark {
+        @radius: (@cell-size - 1px) / 2;
+        position: absolute;
+        z-index: 1;
+        top: -8px;
+        left: -8px;
+        width: 15px;
+        height: 15px;
+        box-sizing: border-box;
+        text-align: center;
+        line-height: 15px;
+        &.flag {
+          border: 2px solid red;
+          border-radius: 9999px;
+        }
+        &.rob {
+          color: red;
+          font-size: 15px;
+          font-weight: bold;
+        }
+      }
     }
   }
 }
