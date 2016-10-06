@@ -1,21 +1,5 @@
 (function () {
 
-    var grid;
-    var initDataElement = document.getElementById('init_data');
-    if (initDataElement.value) {
-        grid = JSON.parse(initDataElement.value);
-    } else {
-        grid = [];
-        for (var i = 0; i < 19; ++i) {
-            var row = [];
-            for (var j = 0; j < 19; ++j) {
-                row.push(0);
-            }
-            grid.push(row);
-        }
-    }
-    console.log(grid);
-
     var vm = window.app = new Vue({
         el: '#app',
         data: {
@@ -30,13 +14,10 @@
             },
             autoSwitch: true,
             action: 1,
-            grid: grid,
-            rob: {
-                x: -1,
-                y: -1
-            },
-            history: [],
-            history_cursor: -1
+            grid: null,
+            rob: null,
+            history: null,
+            history_cursor: 0
         },
         methods: {
             //draw: function () {
@@ -50,49 +31,47 @@
             //    console.log(str);
             //},
             /**
-             * TODO: 在多番回退恢复之间会产生 bug
-             * @returns {boolean}
+             * 恢复历史位置
+             * 1. 如果缺省 index，恢复最新的历史位置
+             * 2. 如果指定 index = -1，恢复棋盘初始位置并且清空历史
+             * 3. 否则，移动到某个历史状态
              */
+            restore: function (index) {
+                // default value for index
+                if (typeof index === 'undefined') {
+                    index = vm.history_cursor;
+                }
+                var log = vm.history[index];
+                vm.grid = utils.grid(log.data);
+                vm.x = log.x;
+                vm.y = log.y;
+                vm.rob = log.rob;
+                vm.action = log.action;
+
+                if (vm.action && vm.autoSwitch) {
+                    vm.action = 3 - vm.action;
+                }
+            },
             prev: function () {
-                if (vm.history_cursor < 0) return false;
-                var log = vm.history[vm.history_cursor--];
-                vm.go(
-                    log.x,
-                    log.y,
-                    log.old_val,
-                    true
-                );
-                // 填回提子
-                for (var i = 0; i < log.captured.length; ++i) {
-                    var c = log.captured[i];
-                    vm.grid[c.x].splice(c.y, 1, c.val);
-                }
-                // 恢复劫争禁入点
-                vm.rob = {x: log.rob.x, y: log.rob.y};
-                // 切换角色
-                if (log.new_val && vm.autoSwitch) {
-                    vm.action = log.new_val;
-                }
+                if (vm.history_cursor <= 0) return false;
+                vm.restore(--vm.history_cursor);
             },
             next: function () {
                 if (vm.history_cursor >= vm.history.length - 1) return false;
-                var log = vm.history[++vm.history_cursor];
-                vm.go(
-                    log.x,
-                    log.y,
-                    log.new_val,
-                    true
-                );
-                // 恢复劫争禁入点
-                vm.rob = {x: log.rob.x, y: log.rob.y};
-                // 切换角色
-                if (log.new_val && vm.autoSwitch) {
-                    vm.action = 3 - log.new_val;
-                }
+                vm.restore(++vm.history_cursor);
             },
             getLabel: function (x, y) {
+                if (x < 0 || y < 0) return '-';
                 return vm.label.x[x] + vm.label.y[y];
             },
+            /**
+             * 落子操作
+             * @param x
+             * @param y
+             * @param action
+             * @param nolog boolean 是否忽略历史记录
+             * @returns {boolean}
+             */
             go: function (x, y, action, nolog) {
 
                 if (typeof(action) === 'undefined') {
@@ -116,10 +95,10 @@
                 var log = {
                     x: x,
                     y: y,
-                    old_val: vm.grid[x][y],
-                    new_val: action
+                    action: action
                 };
 
+                // 放入或者移除棋子
                 vm.grid[x].splice(y, 1, action);
 
                 // 对方没有气的子
@@ -136,7 +115,8 @@
                         }
                     }
                     if (isCaptured) {
-                        vm.grid[x].splice(y, 1, log.old_val);
+                        //vm.grid[x].splice(y, 1, log.old_val);
+                        vm.restore();
                         console.log(vm.getLabel(x, y) + ': 禁入点，不能自杀');
                         return false;
                     }
@@ -162,14 +142,16 @@
                 }
 
                 if (!nolog) {
+                    log.data = utils.getDataFromGrid(vm.grid);
                     if (action && vm.autoSwitch) {
                         vm.action = 3 - action;
                     }
+                    // 清除掉当前历史位置后面的所有记录并且插入一条
                     vm.history.splice(
-                        vm.history_cursor,
-                        vm.history.length - 1 - vm.history_cursor
+                        vm.history_cursor + 1,
+                        vm.history.length - 1 - vm.history_cursor,
+                        log
                     );
-                    vm.history.push(log);
                     vm.history_cursor = vm.history.length - 1;
                 }
 
@@ -187,7 +169,7 @@
                     return false;
                 }
 
-                // 19x19, unvisit: -1, pending: -2, live: 1, dead: 0
+                // 19x19, not-visit: -1, pending: -2, live: 1, dead: 0
                 var cgrid = [], i, j;
                 for (i = 0; i < 19; ++i) {
                     var row = [];
@@ -264,12 +246,34 @@
                     '/submit/',
                     JSON.stringify({
                         grid: grid,
-                        rob: [vm.rob.x, vm.rob.y],
+                        rob: [vm.rob.x, vm.rob.y]
                     })
                 ).then(function (resp) {
                     console.log(resp);
                 });
             }
+        },
+        ready: function () {
+
+            // set the initial grid
+            var el = document.getElementById('init_data');
+            this.grid = el.value ?
+                JSON.parse(el.value) : utils.grid();
+
+            // set the initial rob position
+            this.rob = {
+                x: parseInt(el.getAttribute('data-rob-x') || -1),
+                y: parseInt(el.getAttribute('data-rob-y') || -1)
+            };
+
+            // set the base history stack
+            this.history_cursor = 0;
+            this.history = [{
+                x: -1, y: -1, action: 0, captured: [],
+                data: utils.getDataFromGrid(this.grid),
+                rob: JSON.parse(JSON.stringify(this.rob))
+            }];
+
         }
     });
 })();

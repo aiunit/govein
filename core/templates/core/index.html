@@ -8,7 +8,9 @@
 </head>
 <body>
 <div id="app">
-    <input id="init_data" type="hidden" value="{{ state.to_grid }}"/>
+    <input id="init_data" type="hidden" value="{{ state.to_grid }}"
+           data-rob-x="{{ state.rob_x }}"
+           data-rob-y="{{ state.rob_y }}"/>
     {% verbatim %}
     <div class="grid" :class="{black: action==1, white: action==2}">
         <div class="label-x">
@@ -31,18 +33,20 @@
             <th>位置</th>
             <th>x</th>
             <th>y</th>
-            <th>old</th>
-            <th>new</th>
+            <th>提子</th>
+            <th>禁入点</th>
+            <th>操作</th>
         </tr>
         </thead>
         <tbody>
         <tr :class="{active: history_cursor == $index}" v-for="log in history">
             <td>{{ $index + 1 }}</td>
-            <td>{{ 'ABCDEFGHJKLMNOPQRST'[log.y] }}{{ 19 - log.x }}</td>
+            <td>{{ getLabel(log.x, log.y) }}</td>
             <td>{{ log.x }}</td>
             <td>{{ log.y }}</td>
-            <td>{{ ['-', '黑', '白'][log.old_val] }}</td>
-            <td>{{ ['-', '黑', '白'][log.new_val] }}</td>
+            <td>{{ log.captured.length }}</td>
+            <td>{{ getLabel(log.rob.x, log.rob.y) }}</td>
+            <td>{{ ['x', '黑', '白'][log.action] }}</td>
         </tr>
         </tbody>
     </table>
@@ -95,6 +99,7 @@
 
     <script src="{% static 'core/lib/vuejs/vue.js' %}"></script>
     <script src="{% static 'core/lib/vuejs/vue-resource.min.js' %}"></script>
+    <script src="{% static 'core/js/utils.js' %}"></script>
     <script src="{% static 'core/js/resource.js' %}"></script>
     <script src="{% static 'core/js/script.js' %}"></script>
 </div>
