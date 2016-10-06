@@ -4,11 +4,10 @@
         el: '#app',
         data: {
             label: {
-                x: [
-                    19, 18, 17, 16,
-                    15, 14, 13, 12, 11,
-                    10, 9, 8, 7, 6,
-                    5, 4, 3, 2, 1
+                x: [1, 2, 3, 4, 5,
+                    6, 7, 8, 9, 10,
+                    11, 12, 13, 14, 15,
+                    16, 17, 18, 19
                 ],
                 y: 'ABCDEFGHJKLMNOPQRST'
             },
@@ -21,10 +20,10 @@
         },
         computed: {
             pos: function () {
-                return {
+                return vm.history ? {
                     x: vm.history[vm.history_cursor].x,
                     y: vm.history[vm.history_cursor].y
-                };
+                } : {x: -1, y: -1};
             }
         },
         methods: {
@@ -48,13 +47,16 @@
                 // default value for index
                 if (typeof index === 'undefined') {
                     index = vm.history_cursor;
+                } else {
+                    vm.history_cursor = index
                 }
                 var log = vm.history[index];
                 vm.grid = utils.grid(log.data);
                 vm.x = log.x;
                 vm.y = log.y;
                 vm.rob = log.rob;
-                vm.action = log.action;
+                // 如果是第 0 步，总是该黑子下
+                vm.action = index ? log.action : 2;
 
                 if (vm.action && vm.autoSwitch) {
                     vm.action = 3 - vm.action;
@@ -62,15 +64,23 @@
             },
             prev: function () {
                 if (vm.history_cursor <= 0) return false;
-                vm.restore(--vm.history_cursor);
+                vm.restore(vm.history_cursor - 1);
             },
             next: function () {
                 if (vm.history_cursor >= vm.history.length - 1) return false;
-                vm.restore(++vm.history_cursor);
+                vm.restore(vm.history_cursor + 1);
+            },
+            /**
+             * 翻转棋盘
+             */
+            flip: function () {
+                utils.flip(vm.grid);
+                vm.grid = JSON.parse(JSON.stringify(vm.grid));
+                vm.action = vm.action ? 3 - vm.action : vm.action;
             },
             getLabel: function (x, y) {
                 if (x < 0 || y < 0) return '-';
-                return vm.label.x[x] + vm.label.y[y];
+                return vm.label.y[y] + vm.label.x[x];
             },
             /**
              * 落子操作
@@ -89,6 +99,12 @@
                 // 如果已经有子，禁入
                 if (action && vm.grid[x][y]) {
                     console.log(vm.getLabel(x, y) + ': 禁入点，已经有子');
+                    return false;
+                }
+
+                // 无子可以擦除
+                if (!action && !vm.grid[x][y]) {
+                    console.log(vm.getLabel(x, y) + ': 这里没有棋子可以擦除');
                     return false;
                 }
 
@@ -150,17 +166,29 @@
                 }
 
                 if (!nolog) {
-                    log.data = utils.getDataFromGrid(vm.grid);
-                    if (action && vm.autoSwitch) {
-                        vm.action = 3 - action;
-                    }
-                    // 清除掉当前历史位置后面的所有记录并且插入一条
-                    vm.history.splice(
-                        vm.history_cursor + 1,
-                        vm.history.length - 1 - vm.history_cursor,
-                        log
-                    );
-                    vm.history_cursor = vm.history.length - 1;
+                    var grid = JSON.parse(JSON.stringify(vm.grid));
+                    // 如果刚刚下子的是黑子，马上翻转棋盘
+                    if (vm.action === 1) utils.flip(grid);
+                    vm.$http.post('/spy/', JSON.stringify({
+                        grid: grid,
+                        rob: [log.rob.x, log.rob.y]
+                    })).then(function (resp) {
+                        var data = JSON.parse(resp.body);
+                        console.log('SPY', data.id);
+                        log.id = data.id;
+                        log.store = data.store;
+                        log.data = utils.getDataFromGrid(vm.grid);
+                        if (action && vm.autoSwitch) {
+                            vm.action = 3 - action;
+                        }
+                        // 清除掉当前历史位置后面的所有记录并且插入一条
+                        vm.history.splice(
+                            vm.history_cursor + 1,
+                            vm.history.length - 1 - vm.history_cursor,
+                            log
+                        );
+                        vm.history_cursor = vm.history.length - 1;
+                    });
                 }
 
                 //vm.draw();
@@ -240,15 +268,8 @@
             },
             submit: function () {
                 // 因为默认黑先，所以如果该白走，需要将所有棋子翻转
-                var i, j;
                 var grid = JSON.parse(JSON.stringify(vm.grid));
-                if (vm.action === 2) {
-                    for (i = 0; i < grid.length; ++i) {
-                        for (j = 0; j < grid[i].length; ++j) {
-                            grid[i][j] = grid[i][j] && 3 - grid[i][j];
-                        }
-                    }
-                }
+                if (vm.action === 2) utils.flip(grid);
                 // 发送请求
                 vm.$http.post(
                     '/submit/',
@@ -257,7 +278,7 @@
                         rob: [vm.rob.x, vm.rob.y]
                     })
                 ).then(function (resp) {
-                    console.log(resp);
+                    console.log(resp.body);
                 });
             }
         },
@@ -275,12 +296,22 @@
             };
 
             // set the base history stack
-            this.history_cursor = 0;
-            this.history = [{
+            var log = {
                 x: -1, y: -1, action: 0, captured: [],
                 data: utils.getDataFromGrid(this.grid),
                 rob: JSON.parse(JSON.stringify(this.rob))
-            }];
+            };
+            this.$http.post('/spy/', JSON.stringify({
+                grid: this.grid,
+                rob: [this.rob.x, this.rob.y]
+            })).then(function (resp) {
+                var data = JSON.parse(resp.body);
+                console.log('SPY', data.id);
+                log.id = data.id;
+                log.store = data.store;
+                this.history_cursor = 0;
+                this.history = [log];
+            });
 
         }
     });

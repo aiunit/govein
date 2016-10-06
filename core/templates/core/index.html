@@ -4,6 +4,7 @@
     {% load staticfiles %}
     <meta charset="UTF-8">
     <title>Go Vein Project</title>
+    <link rel="stylesheet" href="{% static 'core/css/reset.min.css' %}"/>
     <link rel="stylesheet" href="{% static 'core/css/style.css' %}"/>
 </head>
 <body>
@@ -32,6 +33,7 @@
         <thead>
         <tr>
             <th>序号</th>
+            <th>HASH</th>
             <th>位置</th>
             <th>x</th>
             <th>y</th>
@@ -43,6 +45,12 @@
         <tbody>
         <tr :class="{active: history_cursor == $index}" v-for="log in history">
             <td>{{ $index + 1 }}</td>
+            <td>
+                <a class="link-log" href="javascript:"
+                   :class="{store: log.store}"
+                   @click="restore($index)"
+                >{{ log.id.substr(0,6) }}</a>
+            </td>
             <td>{{ getLabel(log.x, log.y) }}</td>
             <td>{{ log.x }}</td>
             <td>{{ log.y }}</td>
@@ -70,6 +78,7 @@
                 <input type="checkbox" v-model="autoSwitch"/>
                 自动切换
             </label>
+            <button @click="flip">翻转</button>
         </div>
         <div>
             <button @click="prev">&lt;</button>
@@ -79,25 +88,26 @@
     </div>
     {% endverbatim %}
 
-    <hr/>
-
-    <table class="table-states">
-        <thead>
-        <tr>
-            <th>ID</th>
-        </tr>
-        </thead>
-        <tbody>
+    <ul class="list-states">
         {% for bs in state_list %}
-            <tr>
-                <td>
-                    <a href="?id={{ bs.id }}">{{ bs.id }}</a>
-                </td>
-            </tr>
+            <li>
+                <a href="?id={{ bs.id }}">
+                    <img src="/preview/{{ bs.id }}/"
+                         alt="{{ bs.id | slice:":6" }}"/>
+                    <div class="label">{{ bs.id | slice:":6" }}</div>
+                </a>
+            </li>
         {% endfor %}
-        </tbody>
+    </ul>
 
-    </table>
+    <form class="form-detail">
+        <div class="sub-form">
+
+        </div>
+        <div class="sub-form">
+
+        </div>
+    </form>
 
     <script src="{% static 'core/lib/vuejs/vue.js' %}"></script>
     <script src="{% static 'core/lib/vuejs/vue-resource.min.js' %}"></script>

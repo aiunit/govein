@@ -1,3 +1,69 @@
+a {
+  text-decoration: none;
+  color: inherit;
+}
+strong {
+  font-weight: bold;
+}
+small {
+  font-size: 0.8em;
+}
+em {
+  font-style: italic;
+}
+del {
+  text-decoration: line-through;
+}
+input {
+  font-size: inherit;
+  color: inherit;
+}
+.text-left {
+  text-align: left;
+}
+.text-right {
+  text-align: right;
+}
+.text-center {
+  text-align: center;
+}
+.pull-left {
+  float: left;
+}
+.pull-right {
+  float: right;
+}
+.clearfix {
+  clear: both;
+  zoom: 1;
+}
+.clearfix::before {
+  content: "";
+  display: table;
+}
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.float-wrapper {
+  display: inline-block;
+  width: 100%;
+  zoom: 1;
+}
+.nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.circle {
+  -webkit-border-radius: 9999px;
+  -moz-border-radius: 9999px;
+  border-radius: 9999px;
+}
+body {
+  padding: 15px;
+}
 .grid {
   position: relative;
   background: burlywood;
@@ -79,11 +145,10 @@
   border-radius: 12px;
 }
 .grid .row .cell.white::after {
-  background: white;
-  border: 1px solid #AAA;
+  background: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20%3F%3E%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22100%25%22%20height%3D%22100%25%22%20viewBox%3D%220%200%201%201%22%20preserveAspectRatio%3D%22none%22%3E%3ClinearGradient%20id%3D%22gradient%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%220%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23ffffff%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23cccccc%22%2F%3E%3C%2FlinearGradient%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22url(%23gradient)%22%20%2F%3E%3C%2Fsvg%3E');
 }
 .grid .row .cell.black::after {
-  background: black;
+  background: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20%3F%3E%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22100%25%22%20height%3D%22100%25%22%20viewBox%3D%220%200%201%201%22%20preserveAspectRatio%3D%22none%22%3E%3ClinearGradient%20id%3D%22gradient%22%20gradientUnits%3D%22userSpaceOnUse%22%20x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%220%25%22%20y2%3D%22100%25%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23555555%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23000000%22%2F%3E%3C%2FlinearGradient%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221%22%20height%3D%221%22%20fill%3D%22url(%23gradient)%22%20%2F%3E%3C%2Fsvg%3E');
 }
 .grid .row .cell .cell-mark {
   position: absolute;
@@ -110,7 +175,7 @@ table {
   border-collapse: collapse;
 }
 table tr.active {
-  color: red;
+  background: rgba(255, 255, 0, 0.2);
 }
 table th,
 table td {
@@ -121,6 +186,46 @@ table.table-log,
 table.table-state {
   float: right;
 }
+table .link-log {
+  color: red;
+}
+table .link-log.store {
+  color: green;
+}
 .form-operate {
+  padding: 10px 0;
   clear: left;
+}
+.form-detail {
+  float: left;
+}
+.form-detail .sub-form {
+  float: left;
+  width: 300px;
+}
+ul.list-states {
+  padding: 10px 0;
+  clear: left;
+  float: left;
+  width: 515px;
+}
+ul.list-states li {
+  float: left;
+  margin: 0 4px 4px 0;
+}
+ul.list-states li a {
+  display: block;
+  position: relative;
+}
+ul.list-states li a img {
+  display: block;
+}
+ul.list-states li a .label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 2px;
+  font-size: 12px;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
 }

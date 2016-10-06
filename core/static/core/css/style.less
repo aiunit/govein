@@ -1,9 +1,17 @@
+@import (once) "template";
+
 @color-line: #333;
-@color-stone-white: white;
+//@color-stone-white: white;
+@color-stone-white: svg-gradient(to bottom, #FFFFFF, #CCCCCC);
 @color-stone-white-border: #AAA;
-@color-stone-black: black;
+//@color-stone-black: black;
+@color-stone-black: svg-gradient(to bottom, #555555, #000000);
 
 @cell-size: 25px;
+
+body {
+  padding: 15px;
+}
 
 .grid {
   position: relative;
@@ -86,7 +94,7 @@
       }
       &.white::after {
         background: @color-stone-white;
-        border: 1px solid @color-stone-white-border;
+        //border: 1px solid @color-stone-white-border;
       }
       &.black::after {
         background: @color-stone-black;
@@ -120,7 +128,7 @@ table {
   font-size: 12px;
   border-collapse: collapse;
   tr.active {
-    color: red;
+    background: rgba(255, 255, 0, 0.2);
   }
   th, td {
     padding: 2px 4px;
@@ -129,8 +137,51 @@ table {
   &.table-log, &.table-state {
     float: right;
   }
+  .link-log {
+    color: red;
+    &.store {
+      color: green;
+    }
+  }
 }
 
 .form-operate {
+  padding: 10px 0;
   clear: left;
+}
+
+.form-detail {
+  float: left;
+  .sub-form {
+    float: left;
+    width: 300px;
+  }
+}
+
+ul.list-states {
+  padding: 10px 0;
+  clear: left;
+  float: left;
+  width: 515px;
+  li {
+    float: left;
+    margin: 0 4px 4px 0;
+    a {
+      display: block;
+      position: relative;
+      img {
+        display: block;
+      }
+      .label {
+        position: absolute;
+        left: 0;
+        top: 0;
+        padding: 2px;
+        font-size: 12px;
+        color: white;
+        background: rgba(0, 0, 0, 0.5);
+      }
+    }
+
+  }
 }

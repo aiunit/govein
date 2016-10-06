@@ -70,3 +70,15 @@ utils.grid = function (data) {
     return grid;
 
 };
+
+/**
+ * 将所有黑白棋子翻转
+ * @param grid
+ */
+utils.flip = function (grid) {
+    for (var i = 0; i < grid.length; ++i) {
+        for (var j = 0; j < grid[i].length; ++j) {
+            grid[i][j] = grid[i][j] && 3 - grid[i][j];
+        }
+    }
+};

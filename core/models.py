@@ -119,6 +119,7 @@ class BoardState(UserOwnedModel,
             self.normalize()
         else:
             del kwargs['skip_normalize']
+        print(self.id)
         super().save(*args, **kwargs)
 
     def get_preview_image_bytes(self):
@@ -176,7 +177,8 @@ class BoardState(UserOwnedModel,
         return reverse('preview', kwargs=dict(pk=self.id))
 
     def preview_html_tag(self):
-        return r'<img src="{}"/>'.format(self.preview_url())
+        return r'<img src="{}"/>'.format(self.preview_url()) \
+            if self.id else ''
 
     preview_html_tag.short_description = 'Preview'
     preview_html_tag.allow_tags = True
@@ -198,9 +200,9 @@ class BoardState(UserOwnedModel,
 
     @staticmethod
     def get_label(x, y):
-        label_x = list(range(19, 0, -1)) + ['-']
+        label_x = list(map(str, range(1, 20))) + ['-']
         label_y = 'ABCDEFGHJKLMNOPQRST-'
-        return '{}{}'.format(label_x[x], label_y[y])
+        return '{}{}'.format(label_y[y], label_x[x])
 
     @staticmethod
     def get_data_from_grid(grid):
@@ -252,8 +254,10 @@ class BoardState(UserOwnedModel,
         for i in range(mode % 4):
             # http://stackoverflow.com/a/496056/2544762
             grid = list(zip(*grid[::-1]))
-            rob_x, rob_y = rob_y, len(grid) - 1 - rob_x
+            if rob_x >= 0 or rob_y >= 0:
+                rob_x, rob_y = rob_y, len(grid) - 1 - rob_x
         data = BoardState.get_data_from_grid(grid)
+        # print(data, (rob_x, rob_y))
         return (data, (rob_x, rob_y)) if rob else data
 
     def to_grid(self):
@@ -275,6 +279,7 @@ class BoardState(UserOwnedModel,
             rob_x=rob[0],
             rob_y=rob[1],
         )
+        bs.get_normalization(data, rob)
         bs.normalize()
         objects = BoardState.objects.filter(id=bs.id)
         if objects.exists():
@@ -282,10 +287,20 @@ class BoardState(UserOwnedModel,
         bs.save(skip_normalize=True)
         return bs
 
+    @staticmethod
+    def get_normalization(data, rob):
+        data, rob = min(
+            [BoardState.transform(data, mode, rob)
+             for mode in range(8)]
+        )
+        # print('result')
+        # print(data, rob)
+        # print(BoardState.get_key_from_data(data, rob))
+        return data, rob
+
     def normalize(self):
-        self.data, (self.rob_x, self.rob_y) = min([BoardState.transform(
-            self.data, mode, self.rob()
-        ) for mode in range(8)])
+        self.data, (self.rob_x, self.rob_y) = \
+            self.get_normalization(self.data, self.rob())
         self.id = self.get_key_from_data(self.data, self.rob())
 
 
