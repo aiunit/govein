@@ -1,3 +1,14 @@
-django
-mysqlclient
+chardet
+pyaml
+python-dateutil
 pillow
+sphinx
+django
+django-filter
+django-cors-headers
+django-fullclean
+djangorestframework
+gunicorn
+mysqlclient
+beautifulsoup4
+requests

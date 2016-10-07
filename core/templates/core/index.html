@@ -34,7 +34,7 @@
         <tr>
             <th>序号</th>
             <th>HASH</th>
-            <th>位置</th>
+            <th>MOVE</th>
             <th>x</th>
             <th>y</th>
             <th>提子</th>
@@ -51,7 +51,12 @@
                    @click="restore($index)"
                 >{{ log.id.substr(0,6) }}</a>
             </td>
-            <td>{{ getLabel(log.x, log.y) }}</td>
+            <td>
+                <a class="link-move"
+                   href="javascript:" v-if="$index">
+                    {{ getLabel(log.x, log.y) }}
+                </a>
+            </td>
             <td>{{ log.x }}</td>
             <td>{{ log.y }}</td>
             <td>{{ log.captured.length }}</td>
@@ -102,9 +107,11 @@
 
     <form class="form-detail">
         <div class="sub-form">
+            <h5>State</h5>
 
         </div>
         <div class="sub-form">
+            <h5>Transition</h5>
 
         </div>
     </form>

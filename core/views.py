@@ -4,7 +4,14 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 
+from rest_framework import viewsets
+from rest_framework.decorators import list_route, detail_route
+from rest_framework.response import Response
+
 from .models import *
+from .serializers import *
+
+''' Direct Views '''
 
 
 @login_required
@@ -58,3 +65,36 @@ def preview(request, pk):
         bs.get_preview_image_bytes(),
         content_type='image/gif',
     )
+
+
+''' Django Rest Framework ViewSets '''
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+
+
+class BoardStateViewSet(viewsets.ModelViewSet):
+    queryset = BoardState.objects.all()
+    serializer_class = BoardStateSerializer
+
+
+class StateTransitionViewSet(viewsets.ModelViewSet):
+    queryset = StateTransition.objects.all()
+    serializer_class = StateTransitionSerializer

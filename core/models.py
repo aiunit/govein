@@ -106,13 +106,14 @@ class BoardState(UserOwnedModel,
         verbose_name_plural = 'Board States'
 
     def __str__(self):
-        result = '<Board: {}>\n'.format(self.id)
-        grid = self.to_grid()
-        for i in range(19):
-            for j in range(19):
-                result += '.xo#'[grid[i][j]]
-            result += '\n'
-        return result
+        # result = '<Board: {}>\n'.format(self.id)
+        # grid = self.to_grid()
+        # for i in range(19):
+        #     for j in range(19):
+        #         result += '.xo#'[grid[i][j]]
+        #     result += '\n'
+        # return result
+        return self.id[:6]
 
     def save(self, *args, **kwargs):
         if not kwargs.get('skip_normalize'):
@@ -309,8 +310,8 @@ class StateTransition(UserOwnedModel,
                       TagAvailableModel):
     label = models.CharField(
         verbose_name='Label',
-        max_length=2,
-        help_text='Mark the point on the board with an alphabet or two',
+        max_length=3,
+        help_text='Mark the point on the board with 1-3 alphabets or numbers',
     )
 
     source = models.ForeignKey(
@@ -318,13 +319,15 @@ class StateTransition(UserOwnedModel,
         to=BoardState,
         db_index=True,
         related_name='next_transitions',
+        help_text='The state transfer from',
     )
 
     target = models.ForeignKey(
-        verbose_name='Source',
+        verbose_name='Target',
         to=BoardState,
         db_index=True,
         related_name='prev_transitions',
+        help_text='The state transfer to',
     )
 
     class Meta:

@@ -186,11 +186,20 @@ table.table-log,
 table.table-state {
   float: right;
 }
+table a:link {
+  text-decoration: underline;
+}
 table .link-log {
-  color: red;
+  color: gray;
 }
 table .link-log.store {
   color: green;
+}
+table .link-move {
+  color: gray;
+}
+table .link-move.store {
+  color: blue;
 }
 .form-operate {
   padding: 10px 0;
