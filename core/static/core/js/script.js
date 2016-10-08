@@ -24,6 +24,14 @@
                     x: vm.history[vm.history_cursor].x,
                     y: vm.history[vm.history_cursor].y
                 } : {x: -1, y: -1};
+            },
+            state: function () {
+                return this.history[this.history_cursor];
+            },
+            transition: function () {
+                return {
+                    comments: []
+                };
             }
         },
         methods: {
@@ -55,9 +63,11 @@
                 vm.x = log.x;
                 vm.y = log.y;
                 vm.rob = log.rob;
+
                 // 如果是第 0 步，总是该黑子下
                 vm.action = index ? log.action : 2;
 
+                // 换另一方落子
                 if (vm.action && vm.autoSwitch) {
                     vm.action = 3 - vm.action;
                 }
@@ -87,10 +97,11 @@
              * @param x
              * @param y
              * @param action
-             * @param nolog boolean 是否忽略历史记录
              * @returns {boolean}
              */
-            go: function (x, y, action, nolog) {
+            go: function (x, y, action) {
+
+                // 参数校验
 
                 if (typeof(action) === 'undefined') {
                     action = parseInt(vm.action);
@@ -115,15 +126,11 @@
                 }
 
                 var i;
-
-                var log = {
-                    x: x,
-                    y: y,
-                    action: action
-                };
+                var rob = {x: -1, y: -1};
+                var pos = {x: x, y: y};
 
                 // 放入或者移除棋子
-                vm.grid[x].splice(y, 1, action);
+                vm.grid[x][y] = action;
 
                 // 对方没有气的子
                 var captured = vm.getCapturedStones(action);
@@ -139,7 +146,6 @@
                         }
                     }
                     if (isCaptured) {
-                        //vm.grid[x].splice(y, 1, log.old_val);
                         vm.restore();
                         console.log(vm.getLabel(x, y) + ': 禁入点，不能自杀');
                         return false;
@@ -148,51 +154,30 @@
 
                 // 处理劫争，互相咬住一子即为有劫
                 if (captured.length === 1 && beCaptured.length === 1) {
-                    vm.rob = {
+                    rob = {
                         x: captured[0].x,
                         y: captured[0].y
                     };
-                } else {
-                    // 清除劫争禁入状态
-                    vm.rob = {x: -1, y: -1};
                 }
 
                 // 记录并清除提子
-                log.captured = captured;
-                log.rob = {x: vm.rob.x, y: vm.rob.y};
                 for (i = 0; i < captured.length; ++i) {
                     var c = captured[i];
-                    vm.grid[c.x].splice(c.y, 1, 0);
+                    vm.grid[c.x][c.y] = 0;
                 }
 
-                if (!nolog) {
-                    var grid = JSON.parse(JSON.stringify(vm.grid));
-                    // 如果刚刚下子的是黑子，马上翻转棋盘
-                    if (vm.action === 1) utils.flip(grid);
-                    vm.$http.post('/spy/', JSON.stringify({
-                        grid: grid,
-                        rob: [log.rob.x, log.rob.y]
-                    })).then(function (resp) {
-                        var data = JSON.parse(resp.body);
-                        console.log('SPY', data.id);
-                        log.id = data.id;
-                        log.store = data.store;
-                        log.data = utils.getDataFromGrid(vm.grid);
-                        if (action && vm.autoSwitch) {
-                            vm.action = 3 - action;
-                        }
-                        // 清除掉当前历史位置后面的所有记录并且插入一条
-                        vm.history.splice(
-                            vm.history_cursor + 1,
-                            vm.history.length - 1 - vm.history_cursor,
-                            log
-                        );
-                        vm.history_cursor = vm.history.length - 1;
-                    });
-                }
-
-                //vm.draw();
-                return true;
+                // 记录 Log 并实施渲染
+                return utils.spy(
+                    vm.grid, pos, rob, action, captured
+                ).then(function (log) {
+                    // 清除掉当前历史位置后面的所有记录并且插入一条
+                    vm.history.splice(
+                        vm.history_cursor + 1,
+                        vm.history.length - 1 - vm.history_cursor,
+                        log
+                    );
+                    vm.restore(vm.history.length - 1);
+                });
             },
             isStar: function (x, y) {
                 return (x == 3 || x == 9 || x == 15)
@@ -284,33 +269,30 @@
         },
         ready: function () {
 
-            // set the initial grid
-            var el = document.getElementById('init_data');
-            this.grid = el.value ?
-                JSON.parse(el.value) : utils.grid();
+            //api = {
+            //    BoardState: this.resourse('state{/id}{/action}/'),
+            //    StateTransition: this.resourse('transition{/id}{/action}/'),
+            //    User: this.resourse('user{/id}{/action}/'),
+            //    Group: this.resourse('Group{/id}{/action}/'),
+            //    Tag: this.resourse('Tag{/id}{/action}/'),
+            //    Comment: this.resourse('comment{/id}{/action}/')
+            //};
+            //var vm = this;
 
-            // set the initial rob position
-            this.rob = {
+            // TODO: 应改进为 AJAX 调用
+            // load the initial grid
+            var el = document.getElementById('init_data');
+            var grid = el.value ? JSON.parse(el.value) : utils.grid();
+            var pos = {x: -1, y: -1};
+            var rob = {
                 x: parseInt(el.getAttribute('data-rob-x') || -1),
                 y: parseInt(el.getAttribute('data-rob-y') || -1)
             };
 
             // set the base history stack
-            var log = {
-                x: -1, y: -1, action: 0, captured: [],
-                data: utils.getDataFromGrid(this.grid),
-                rob: JSON.parse(JSON.stringify(this.rob))
-            };
-            this.$http.post('/spy/', JSON.stringify({
-                grid: this.grid,
-                rob: [this.rob.x, this.rob.y]
-            })).then(function (resp) {
-                var data = JSON.parse(resp.body);
-                console.log('SPY', data.id);
-                log.id = data.id;
-                log.store = data.store;
-                this.history_cursor = 0;
-                this.history = [log];
+            utils.spy(grid, pos, rob).then(function (log) {
+                vm.history = [log];
+                vm.restore(0);
             });
 
         }

@@ -206,11 +206,23 @@ table .link-move.store {
   clear: left;
 }
 .form-detail {
+  font-size: 14px;
   float: left;
+  margin: 0 15px;
 }
 .form-detail .sub-form {
-  float: left;
-  width: 300px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #CCC;
+}
+.form-detail .sub-form .label {
+  color: red;
+}
+.form-detail .sub-form .label.store {
+  color: green;
+}
+.form-detail .sub-form .btn-submit {
+  color: blue;
 }
 ul.list-states {
   padding: 10px 0;

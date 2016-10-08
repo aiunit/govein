@@ -160,10 +160,24 @@ table {
 }
 
 .form-detail {
+  font-size: 14px;
   float: left;
+  margin: 0 15px;
   .sub-form {
-    float: left;
-    width: 300px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #CCC;
+    //float: left;
+    //width: 300px;
+    .label {
+      color: red;
+      &.store {
+        color: green;
+      }
+    }
+    .btn-submit {
+      color: blue;
+    }
   }
 }
 

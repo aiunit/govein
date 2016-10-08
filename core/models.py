@@ -56,6 +56,9 @@ class Tag(models.Model):
         verbose_name_plural = 'Tags'
         db_table = 'go_core_tag'
 
+    def __str__(self):
+        return self.name
+
 
 class TagAvailableModel(models.Model):
     tags = models.ManyToManyField(

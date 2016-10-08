@@ -81,4 +81,47 @@ utils.flip = function (grid) {
             grid[i][j] = grid[i][j] && 3 - grid[i][j];
         }
     }
+    return grid;
+};
+
+/**
+ *
+ * @param grid
+ * @param action
+ */
+utils.autoFlip = function (grid, action) {
+    grid = JSON.parse(JSON.stringify(grid));
+    if (!action || action === 1) {
+        return grid;
+    } else if (action === 2) {
+        return utils.flip(grid);
+    }
+    throw new Error('参数错误');
+};
+
+/**
+ * 通过 SPY 获取 Log
+ */
+utils.spy = function (grid, pos, rob, action, captured) {
+    return Vue.http.post('/spy/', JSON.stringify({
+        grid: utils.autoFlip(grid, action),
+        rob: [rob.x, rob.y]
+    })).then(function (resp) {
+        var data = JSON.parse(resp.body);
+        console.log('SPY', data.id);
+        return {
+            x: pos.x,
+            y: pos.y,
+            action: action,
+            captured: captured || [],
+            data: utils.getDataFromGrid(grid),
+            rob: {x: rob.x, y: rob.y},
+            id: data.id,
+            store: data.store,
+            comments: []
+        };
+    }).then(function(log) {
+        // TODO: 在这里读取相关的评论
+        return log;
+    });
 };

@@ -9,3 +9,9 @@ Vue.http.interceptors.push(function (request, next) {
     }
     next();
 });
+
+Vue.http.options.root = '/api/';
+Vue.http.options.crossOrigin = true;
+Vue.http.options.xhr = {withCredentials: true};
+
+var api = {};

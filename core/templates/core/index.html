@@ -29,17 +29,43 @@
             </div>
         </div>
     </div>
+    <form class="form-detail" v-if="history">
+        <div class="sub-form">
+            <h5>
+                State
+                <span class="label" :class="{store: state.store}">
+                    {{ state.id.substr(0,6) }}</span>
+                <a href="javascript:" @click="submit"
+                   class="btn-submit"
+                   :class="{store: state.store}">[提交]</a>
+            </h5>
+            <ul v-if="state.store">
+                <li v-for="comment in state.comments">
+                    {{ comment.content }}
+                </li>
+            </ul>
+        </div>
+        <div class="sub-form">
+            <h5>Transition</h5>
+
+            <ul>
+                <li v-for="comment in transition.comments">
+                    {{ comment.content }}
+                </li>
+            </ul>
+        </div>
+    </form>
     <table class="table-log">
         <thead>
         <tr>
-            <th>序号</th>
+            <th>ID</th>
             <th>HASH</th>
             <th>MOVE</th>
-            <th>x</th>
-            <th>y</th>
-            <th>提子</th>
-            <th>禁入点</th>
-            <th>操作</th>
+            <!--<th>x</th>
+            <th>y</th>-->
+            <th>提</th>
+            <th>禁</th>
+            <th>子</th>
         </tr>
         </thead>
         <tbody>
@@ -57,8 +83,8 @@
                     {{ getLabel(log.x, log.y) }}
                 </a>
             </td>
-            <td>{{ log.x }}</td>
-            <td>{{ log.y }}</td>
+            <!--<td>{{ log.x }}</td>
+            <td>{{ log.y }}</td>-->
             <td>{{ log.captured.length }}</td>
             <td>{{ getLabel(log.rob.x, log.rob.y) }}</td>
             <td>{{ ['x', '黑', '白'][log.action] }}</td>
@@ -105,21 +131,11 @@
         {% endfor %}
     </ul>
 
-    <form class="form-detail">
-        <div class="sub-form">
-            <h5>State</h5>
-
-        </div>
-        <div class="sub-form">
-            <h5>Transition</h5>
-
-        </div>
-    </form>
 
     <script src="{% static 'core/lib/vuejs/vue.js' %}"></script>
     <script src="{% static 'core/lib/vuejs/vue-resource.min.js' %}"></script>
-    <script src="{% static 'core/js/utils.js' %}"></script>
     <script src="{% static 'core/js/resource.js' %}"></script>
+    <script src="{% static 'core/js/utils.js' %}"></script>
     <script src="{% static 'core/js/script.js' %}"></script>
 </div>
 </body>
